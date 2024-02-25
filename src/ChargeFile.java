@@ -38,6 +38,20 @@ public class ChargeFile {
     }
 
     /**
+     *
+     * @return a line for each charge
+     */
+    @Override
+    public synchronized String toString () {
+        String s = "";
+        ArrayList<Charge> chargeList = getChargeInfo();
+        for (Charge q: chargeList) {
+            s += q.getID() + ", " + q.getCharge() + ", " + q.getX() + ", " + q.getY();
+        }
+        return s;
+    }
+
+    /**
      * updates the information of one of the charges
      *
      * @param charge
@@ -48,6 +62,7 @@ public class ChargeFile {
         }else{
             charges.add(new Charge(charge.getID(), charge.getCharge(), charge.getX(), charge.getY()));//create new charge to avoid issues with having to many pointers
         }
+        System.out.println(this);
     }
 
     /**
@@ -55,6 +70,9 @@ public class ChargeFile {
      * @return All charges in the simulation as an ArrayList
      */
     public synchronized ArrayList<Charge> getChargeInfo () {
+        if (charges == null) {
+            return null;
+        }
         return charges.traverse();
     }
 
@@ -86,8 +104,12 @@ public class ChargeFile {
         public ArrayList<Charge> traverse () {
             ArrayList<Charge> list = new ArrayList<Charge>();
             list.add(charge);
-            list.addAll(left.traverse());
-            list.addAll(right.traverse());
+            if (left != null) {
+                list.addAll(left.traverse());
+            }
+            if (right != null) {
+                list.addAll(right.traverse());
+            }
             return list;
         }
 

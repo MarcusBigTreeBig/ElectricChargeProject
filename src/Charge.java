@@ -17,7 +17,7 @@ import java.util.ArrayList;
 public class Charge extends Thread{
 
     public final static double k = 8.99E+09; //Coulomb's constant
-    private static long tickSpeed = 1; //measured in milliseconds
+    private static long tickSpeed = 1000; //measured in milliseconds
     private static double simTick = 0.001; //measured in seconds
 
     private static ChargeFile locationFile = null;
@@ -55,7 +55,9 @@ public class Charge extends Thread{
             locationFile = new ChargeFile("locationFile.txt");
         }
 
-        run();
+        locationFile.updateCharge(this);
+
+        start();
     }
 
     /**
@@ -127,7 +129,7 @@ public class Charge extends Thread{
             //*** end of physics ***
 
             //incomplete, will need to display more information and write to a file
-            System.out.println("x: " + x + " y: " + y);
+            locationFile.updateCharge(this);
 
             //*** end of critical section ***
 
