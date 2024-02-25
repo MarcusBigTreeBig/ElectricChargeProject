@@ -65,10 +65,27 @@ public class Charge extends Thread{
      * @param pos_y
      * @param charge
      */
-    public Charge (double pos_x, double pos_y, double charge) {
+    public Charge (int iD, double pos_x, double pos_y, double charge) {
+        this.iD = iD;
         x = pos_x;
         y = pos_y;
         q = charge;
+    }
+
+    public int getID () {
+        return iD;
+    }
+    public double getCharge () {
+        return q;
+    }
+    public double getMass () {
+        return m;
+    }
+    public double getX() {
+        return x;
+    }
+    public double getY() {
+        return y;
     }
 
     /**
