@@ -1,4 +1,3 @@
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -66,7 +65,7 @@ public class Charge extends Thread{
      * @param pos_y
      * @param charge
      */
-    private Charge (double pos_x, double pos_y, double charge) {
+    public Charge (double pos_x, double pos_y, double charge) {
         x = pos_x;
         y = pos_y;
         q = charge;
@@ -89,7 +88,7 @@ public class Charge extends Thread{
             //*** beginning of critical section ***
 
             //implement lock for this later
-            ArrayList<Charge> charges = getChargeInfo();
+            ArrayList<Charge> charges = locationFile.getChargeInfo();
 
             //*** start of physics ***
 
@@ -122,16 +121,5 @@ public class Charge extends Thread{
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    /**
-     *
-     * @return All charges in the simulation as a ArrayList
-     */
-    public synchronized ArrayList<Charge> getChargeInfo () {
-        //written for testing a single charge right now
-        ArrayList<Charge> charges = new ArrayList<Charge>();
-        charges.add(new Charge(0, 0, 1E-06));
-        return charges;
     }
 }
