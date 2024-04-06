@@ -1,3 +1,7 @@
+package attempt1;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,7 +14,7 @@ import java.util.Comparator;
  * Has a lock for the object, that has to be acquired to use the methods designed for Charges.
  * Has a read only method for GUI's that does not need a lock.
  */
-public class ChargeFile {
+public class ChargeFile extends JPanel {
 
     private String name;
     private FileWriter writer;
@@ -74,6 +78,17 @@ public class ChargeFile {
             return null;
         }
         return charges.traverse();
+    }
+
+    @Override
+    protected void paintComponent (Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        ArrayList<Charge> chargeList = charges.traverse();
+        for (Charge c: chargeList) {
+            //draw a charge
+            c.draw(g2d);
+        }
     }
 
     /**

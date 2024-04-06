@@ -1,3 +1,7 @@
+package attempt1;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -53,6 +57,10 @@ public class Charge extends Thread{
 
         if (locationFile == null) {
             locationFile = new ChargeFile("locationFile.txt");
+            JFrame f = new JFrame();
+            f.getContentPane().add(locationFile);
+            f.setSize(new Dimension(400, 400));
+            f.setVisible(true);
         }
 
         locationFile.updateCharge(this);
@@ -88,6 +96,10 @@ public class Charge extends Thread{
     }
     public double getY() {
         return y;
+    }
+
+    public void draw (Graphics2D g2d) {
+        g2d.drawOval((int)x, (int)y, 5, 5);//todo: should have correction to coordinates and width
     }
 
     /**
