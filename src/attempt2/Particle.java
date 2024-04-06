@@ -3,6 +3,14 @@ package attempt2;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * Particle for the Electric Field Simulation.
+ * extends Thread, so each particle can determine it's own movements at the same time.
+ * Each particle has a charge and a mass, and x and y coordinates, and x and y components of velocity.
+ * Particles are assumed to be point particles.
+ * The particles interact with each other particles with a Coulomb interaction, and no other forces.
+ */
+
 public class Particle extends Thread {
 
     //simulation information
@@ -23,19 +31,43 @@ public class Particle extends Thread {
 
     private int id;
 
+    /**
+     * sets the initial state of the simulation
+     */
     public static void resetParticles () {
         //todo: have some way of shutting all down
         particles = new ArrayList<Particle>();
     }
 
+    /**
+     * Adds a particle to the list of particles in the simulation
+     *
+     * @param p
+     */
     public synchronized static void addParticle (Particle p) {
         particles.add(p);
     }
 
+    /**
+     *
+     * @return a clone of the list containing all the particles
+     * particles themselves are not cloned
+     */
     public synchronized static ArrayList<Particle> getParticles () {
         return (ArrayList<Particle>) particles.clone();
     }
 
+    /**
+     * Creates a particle, and adds itself to the list of all particles
+     *
+     * @param id
+     * @param pos_x
+     * @param pos_y
+     * @param vel_x
+     * @param vel_y
+     * @param mass
+     * @param charge
+     */
     public Particle (int id, double pos_x, double pos_y, double vel_x, double vel_y, double mass, double charge) {
         this.id = id;
         x = pos_x;
@@ -47,10 +79,18 @@ public class Particle extends Thread {
         addParticle(this);
     }
 
+    /**
+     * particle draws itself
+     *
+     * @param g
+     */
     public void draw (Graphics2D g) {
         g.drawOval((int)x, (int)y, 20, 20);
     }
 
+    /**
+     * Determines the movement of this particle based on the locations of the other particles
+     */
     @Override
     public void run () {
         double a_x;
