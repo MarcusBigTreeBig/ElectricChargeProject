@@ -30,6 +30,8 @@ public class Particle extends Thread {
     private double q; //charge
 
     private int id;
+    private int displayRadius;
+    private boolean displayNumbers;
 
     /**
      * sets the initial state of the simulation
@@ -68,7 +70,7 @@ public class Particle extends Thread {
      * @param mass
      * @param charge
      */
-    public Particle (int id, double pos_x, double pos_y, double vel_x, double vel_y, double mass, double charge) {
+    public Particle (int id, double pos_x, double pos_y, double vel_x, double vel_y, double mass, double charge, boolean displayNumbers) {
         this.id = id;
         x = pos_x;
         y = pos_y;
@@ -76,6 +78,8 @@ public class Particle extends Thread {
         v_y = vel_y;
         m = mass;
         q = charge;
+        displayRadius = 10;
+        this.displayNumbers = displayNumbers;
         addParticle(this);
     }
 
@@ -85,7 +89,18 @@ public class Particle extends Thread {
      * @param g
      */
     public void draw (Graphics2D g) {
-        g.drawOval((int)x, (int)y, 20, 20);
+        g.setColor(Color.BLACK);
+        g.drawOval((int)x-displayRadius, (int)y-displayRadius, displayRadius*2, displayRadius*2);
+        g.setColor(q > 0 ? Color.RED : Color.YELLOW);
+        g.fillOval((int)x-displayRadius, (int)y-displayRadius, displayRadius*2, displayRadius*2);
+        int fontSize = 8;
+        g.setColor(Color.BLACK);
+        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 8));
+        if (displayNumbers) {
+            g.drawString(String.format("%6.2E", q) + " C", (int) x + 2*displayRadius, (int) y - displayRadius + fontSize/2);
+            g.drawString(String.format("%6.2E", m) + " kg", (int) x + 2*displayRadius, (int) y - displayRadius - fontSize/2);
+        }
+        g.drawString(id+"", (int)x-fontSize/4, (int)y+fontSize/4);
     }
 
     /**
