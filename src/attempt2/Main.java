@@ -1,18 +1,29 @@
 package attempt2;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Scanner;
+
 /**
  * Runs the simulation
  */
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
+        Scanner input = new Scanner(new File("src/attempt2/input.txt"));
         Particle.resetParticles();
-        Particle p1 = new Particle(1, 500, 400, 0, 0, 1E+09, -1E-03, true);
-        Particle p2 = new Particle(2, 800, 400, 0, 31.415926, 1E-03,3.2935E-05, true);
-        Particle p3 = new Particle(3, 830, 400, 0, 188.50, 1E-06, -3.6E-06, false);
-        p1.start();
-        p2.start();
-        p3.start();
+        int i = 1;
+        LinkedList<Particle> particles = new LinkedList<Particle>();
+        while (input.hasNextLine()) {
+            particles.add(new Particle(i, input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextInt() == 1));
+            i++;
+        }
+        for (Particle p: particles) {
+            p.start();
+        }
         new SimulationFrame();
     }
 }
