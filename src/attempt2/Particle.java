@@ -2,6 +2,8 @@ package attempt2;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * Particle for the Electric Field Simulation.
@@ -14,12 +16,13 @@ import java.util.ArrayList;
 public class Particle extends Thread {
 
     //simulation information
-    public final static double k = 8.99E+09; //Coulomb's constant
-    private static long tickSpeed = 1; //measured in milliseconds
-    private static double simTick = 0.001; //measured in seconds
+    public final static double k = 8.99E+09; //Coulomb's conant
+    private static long tickSpeed; //measured in milliseconds
+    private static double simTick; //measured in seconds
 
     //shared information
     private static ArrayList<Particle> particles;
+    private static CyclicBarrier barrier;
 
     //physical information
     private double x;
@@ -42,12 +45,35 @@ public class Particle extends Thread {
     }
 
     /**
+     *
+     * @param ts the tick speed of the program
+     */
+    public synchronized static void setTickSpeed (long ts) {
+        tickSpeed = ts;
+    }
+
+    /**
+     *
+     * @param st the tick speed of the simulation
+     */
+    public synchronized static void setSimTick (double st) {
+        simTick = st;
+    }
+
+    /**
      * Adds a particle to the list of particles in the simulation
      *
      * @param p
      */
     public synchronized static void addParticle (Particle p) {
         particles.add(p);
+    }
+
+    /**
+     * creates the barrier based on how many particles have been created
+     */
+    public synchronized static void configureBarrier () {
+        barrier = new CyclicBarrier(particles.size());
     }
 
     /**
@@ -121,12 +147,20 @@ public class Particle extends Thread {
             //***beginning of critical section***
 
             ArrayList<Particle> particles = Particle.getParticles();
+            try {
+                barrier.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (BrokenBarrierException e) {
+                throw new RuntimeException(e);
+            }
 
             //***start of physics***
 
             //calculating total forces by adding each individual force from each particle
             for (Particle p: particles) {
-                if (p.id != this.id) {
+                double tolerance = 0.3*Math.sqrt(v_x*v_x+v_y*v_y)*simTick;
+                if (p.id != this.id && (!Utilities.doubleEquals(x, p.x, tolerance) || !Utilities.doubleEquals(y, p.y, tolerance))) {
                     angle = Math.atan((y-p.y)/(x-p.x));
                     r = Math.sqrt((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y));//distance formula
                     a_tot = (k*q*p.q)/(m*r*r);//Coulomb equation
@@ -142,15 +176,21 @@ public class Particle extends Thread {
             y += v_y*simTick;
 
             //***end of physics***
+            //***end of critical section***
 
-            //TODO: wait on countdown latch
+            //***wait for tick and other particles to have turn
             try {
                 sleep(tickSpeed);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
-            //***end of critical section***
+            try {
+                barrier.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (BrokenBarrierException e) {
+                throw new RuntimeException(e);
+            }
 
         }
     }

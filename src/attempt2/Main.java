@@ -14,6 +14,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         Scanner input = new Scanner(new File("src/attempt2/input.txt"));
+        Particle.setTickSpeed(input.nextLong());
+        Particle.setSimTick(input.nextDouble());
         Particle.resetParticles();
         int i = 1;
         LinkedList<Particle> particles = new LinkedList<Particle>();
@@ -21,6 +23,7 @@ public class Main {
             particles.add(new Particle(i, input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextInt() == 1));
             i++;
         }
+        Particle.configureBarrier();
         for (Particle p: particles) {
             p.start();
         }
