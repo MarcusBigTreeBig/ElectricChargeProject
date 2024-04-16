@@ -1,4 +1,4 @@
-package attempt2;
+package code;
 
 public class Utilities {
     public static boolean doubleEquals (double d1, double d2, double tolerance) {

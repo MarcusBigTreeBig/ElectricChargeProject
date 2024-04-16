@@ -1,6 +1,9 @@
-package attempt2;
+package code;
 
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
@@ -19,6 +22,9 @@ public class Particle extends Thread {
     public final static double k = 8.99E+09; //Coulomb's conant
     private static long tickSpeed; //measured in milliseconds
     private static double simTick; //measured in seconds
+    private static long runTime; //measured in seconds
+    private static boolean usesGUI;
+    private static SimulationFrame frame;
 
     //shared information
     private static ArrayList<Particle> particles;
@@ -35,12 +41,12 @@ public class Particle extends Thread {
     private int id;
     private int displayRadius;
     private boolean displayNumbers;
+    private boolean running;
 
     /**
      * sets the initial state of the simulation
      */
     public static void resetParticles () {
-        //todo: have some way of shutting all down
         particles = new ArrayList<Particle>();
     }
 
@@ -70,10 +76,69 @@ public class Particle extends Thread {
     }
 
     /**
-     * creates the barrier based on how many particles have been created
+     * sets if the simulations should display a gui
+     *
+     * @param uses
      */
-    public synchronized static void configureBarrier () {
+    public static synchronized void setUsesGUI (boolean uses) {
+        usesGUI = uses;
+    }
+
+    /**
+     * sets how long the simulation will run for
+     *
+     * @param time
+     */
+    public static synchronized void setRunTime (int time) {
+        runTime = time;
+    }
+
+    /**
+     * starts the simulation based on the particles created in the class
+     *
+     * creates a barrier
+     * starts all particle threads
+     * starts a thread watching for completion of the simulation
+     */
+    public synchronized static void startSim () {
         barrier = new CyclicBarrier(particles.size());
+        Thread checkIfComplete = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean running = true;
+                long startTime = System.currentTimeMillis();
+                while (running) {
+                    running = System.currentTimeMillis() < startTime+runTime*1000;
+                }
+                try {
+                    stopSim();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        checkIfComplete.start();
+        for (Particle p: particles) {
+            p.start();
+        }
+        if (usesGUI) {
+            frame = new SimulationFrame();
+        }
+    }
+
+    /**
+     * stops all threads, and outputs the gained information to a file
+     */
+    private static synchronized void stopSim () throws IOException {
+        for (Particle p: particles) {
+            p.running = false;
+        }
+        FileWriter file = new FileWriter(new File("src/output_files/output.txt"));
+        for (Particle p: particles) {
+            file.write(p.x + ", " + p.y + ", " + p.v_x + ", " + p.v_y + ", " + p.m + ", " + p.q + "\n");
+            file.flush();
+        }
+        System.exit(0);
     }
 
     /**
@@ -106,6 +171,7 @@ public class Particle extends Thread {
         q = charge;
         displayRadius = 10;
         this.displayNumbers = displayNumbers;
+        running = true;
         addParticle(this);
     }
 
@@ -139,10 +205,14 @@ public class Particle extends Thread {
         double a_tot;
         double r;
         double angle;
-        while (true) {
+        long beginTime;
+        long endTime;
+        while (running) {
 
             a_x = 0;
             a_y = 0;
+
+            beginTime = System.currentTimeMillis();
 
             //***beginning of critical section***
 
@@ -160,7 +230,7 @@ public class Particle extends Thread {
             //calculating total forces by adding each individual force from each particle
             for (Particle p: particles) {
                 double tolerance = 0.3*Math.sqrt(v_x*v_x+v_y*v_y)*simTick;
-                if (p.id != this.id && (!Utilities.doubleEquals(x, p.x, tolerance) || !Utilities.doubleEquals(y, p.y, tolerance))) {
+                if (p.id != this.id && (!Utilities.doubleEquals(x, p.x, tolerance) || !Utilities.doubleEquals(y, p.y, tolerance))) {//don't do calculations if too close together
                     angle = Math.atan((y-p.y)/(x-p.x));
                     r = Math.sqrt((x-p.x)*(x-p.x)+(y-p.y)*(y-p.y));//distance formula
                     a_tot = (k*q*p.q)/(m*r*r);//Coulomb equation
@@ -179,10 +249,13 @@ public class Particle extends Thread {
             //***end of critical section***
 
             //***wait for tick and other particles to have turn
-            try {
-                sleep(tickSpeed);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            endTime = System.currentTimeMillis();
+            if (endTime < beginTime+tickSpeed) {
+                try {
+                    sleep(beginTime+tickSpeed-endTime);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
             try {
                 barrier.await();

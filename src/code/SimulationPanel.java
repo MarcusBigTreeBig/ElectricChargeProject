@@ -1,4 +1,4 @@
-package attempt2;
+package code;
 
 import javax.swing.*;
 import java.awt.*;

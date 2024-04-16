@@ -1,9 +1,7 @@
-package attempt2;
+package code;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -13,7 +11,9 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
-        Scanner input = new Scanner(new File("src/attempt2/input.txt"));
+        Scanner input = new Scanner(new File("src/input_files/input.txt"));
+        Particle.setUsesGUI(input.nextInt() == 1);
+        Particle.setRunTime(input.nextInt());
         Particle.setTickSpeed(input.nextLong());
         Particle.setSimTick(input.nextDouble());
         Particle.resetParticles();
@@ -23,10 +23,6 @@ public class Main {
             particles.add(new Particle(i, input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextDouble(), input.nextInt() == 1));
             i++;
         }
-        Particle.configureBarrier();
-        for (Particle p: particles) {
-            p.start();
-        }
-        new SimulationFrame();
+        Particle.startSim();
     }
 }
