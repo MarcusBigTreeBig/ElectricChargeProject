@@ -144,10 +144,14 @@ public class Particle extends Thread {
     /**
      *
      * @return a clone of the list containing all the particles
-     * particles themselves are not cloned
+     * particles themselves are cloned
      */
     public synchronized static ArrayList<Particle> getParticles () {
-        return (ArrayList<Particle>) particles.clone();
+        ArrayList<Particle> cloneList = new ArrayList<Particle>();
+        for (Particle p: particles) {
+            cloneList.add(new Particle(p.id, p.x, p.y, p.m, p.q, p.displayNumbers));
+        }
+        return cloneList;
     }
 
     /**
@@ -173,6 +177,25 @@ public class Particle extends Thread {
         this.displayNumbers = displayNumbers;
         running = true;
         addParticle(this);
+    }
+
+    /**
+     * Creates a particle that does not get added to the static list of particles
+     *
+     * @param pos_x
+     * @param pos_y
+     * @param mass
+     * @param charge
+     */
+    private Particle (int id, double pos_x, double pos_y, double mass, double charge, boolean displayNumbers) {
+        this.id = id;
+        x = pos_x;
+        y = pos_y;
+        m = mass;
+        q = charge;
+        displayRadius = 10;
+        this.displayNumbers = displayNumbers;
+        running = false;
     }
 
     /**
